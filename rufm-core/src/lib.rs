@@ -40,11 +40,25 @@ type RepositoryResult<T> = Result<T, diesel::result::Error>;
 pub trait TransactionsRepository {
     fn create_transaction(&self, new_transaction: &NewTransaction)
         -> RepositoryResult<Transaction>;
+    fn get_transactions_for_account(
+        &self,
+        account_id: &AccountId,
+    ) -> RepositoryResult<Vec<Transaction>>;
+    fn get_transactions_for_account_before_date_included(
+        &self,
+        account_id: &AccountId,
+        date: &chrono::NaiveDate,
+    ) -> RepositoryResult<Vec<Transaction>>;
 }
 
 pub trait AccountsRepository {
     fn create_account(&self, new_account: &NewAccount) -> RepositoryResult<Account>;
     fn get_account_balance(&self, account_id: &AccountId) -> RepositoryResult<i64>;
+    fn get_account_balance_as_of_date(
+        &self,
+        account_id: &AccountId,
+        date: &chrono::NaiveDate,
+    ) -> RepositoryResult<i64>;
 }
 
 impl AccountsRepository for Client {
@@ -62,17 +76,39 @@ impl AccountsRepository for Client {
     }
 
     fn get_account_balance(&self, account_id: &AccountId) -> RepositoryResult<i64> {
-        let credit_amounts = schema::transactions::table
-            .filter(schema::transactions::destination_account_id.eq(account_id))
-            .select(schema::transactions::amount)
-            .get_results(&self.conn)?;
-        let debit_amounts = schema::transactions::table
-            .filter(schema::transactions::source_account_id.eq(account_id))
-            .select(schema::transactions::amount)
-            .get_results(&self.conn)?;
-
-        Ok(credit_amounts.iter().sum::<i64>() - debit_amounts.iter().sum::<i64>())
+        self.get_transactions_for_account(account_id)
+            .map(|transactions| get_account_balance_from_transactions(transactions, account_id))
     }
+
+    fn get_account_balance_as_of_date(
+        &self,
+        account_id: &AccountId,
+        date: &chrono::NaiveDate,
+    ) -> RepositoryResult<i64> {
+        self.get_transactions_for_account_before_date_included(account_id, date)
+            .map(|transactions| get_account_balance_from_transactions(transactions, account_id))
+    }
+}
+
+fn get_transactions_amount_sum(transactions: Vec<Transaction>) -> i64 {
+    transactions
+        .iter()
+        .map(|transmission| transmission.amount)
+        .sum::<i64>()
+}
+
+fn get_account_balance_from_transactions(
+    transactions: Vec<Transaction>,
+    account_id: &AccountId,
+) -> i64 {
+    let (debit_transmissions, credit_transmissions): (Vec<Transaction>, Vec<Transaction>) =
+        transactions
+            .into_iter()
+            .partition(|transmission| transmission.source_account_id == *account_id);
+
+    let debit_sum = get_transactions_amount_sum(debit_transmissions);
+    let credit_sum = get_transactions_amount_sum(credit_transmissions);
+    credit_sum - debit_sum
 }
 
 impl TransactionsRepository for Client {
@@ -87,5 +123,33 @@ impl TransactionsRepository for Client {
         schema::transactions::table
             .order(schema::transactions::id.desc())
             .first::<Transaction>(&self.conn)
+    }
+
+    fn get_transactions_for_account(
+        &self,
+        account_id: &AccountId,
+    ) -> RepositoryResult<Vec<Transaction>> {
+        schema::transactions::table
+            .filter(
+                schema::transactions::source_account_id
+                    .eq(account_id)
+                    .or(schema::transactions::destination_account_id.eq(account_id)),
+            )
+            .get_results(&self.conn)
+    }
+
+    fn get_transactions_for_account_before_date_included(
+        &self,
+        account_id: &AccountId,
+        date: &chrono::NaiveDate,
+    ) -> RepositoryResult<Vec<Transaction>> {
+        schema::transactions::table
+            .filter(
+                schema::transactions::source_account_id
+                    .eq(account_id)
+                    .or(schema::transactions::destination_account_id.eq(account_id))
+                    .and(schema::transactions::date.le(date)),
+            )
+            .get_results(&self.conn)
     }
 }
