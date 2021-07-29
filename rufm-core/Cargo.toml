@@ -7,4 +7,5 @@ edition = "2018"
 
 [dependencies]
 diesel = { version = "1.4.7", features = ["sqlite"] }
+diesel-derive-newtype = "0.1.2"
 diesel_migrations = "1.4.0"
