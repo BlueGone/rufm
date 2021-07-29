@@ -1,8 +1,11 @@
 use crate::schema::accounts;
 
+#[derive(DieselNewType, Debug, Hash, PartialEq, Eq)]
+pub struct AccountId(pub i32);
+
 #[derive(Queryable, Debug)]
 pub struct Account {
-    pub id: i32,
+    pub id: AccountId,
     pub name: String,
 }
 

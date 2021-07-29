@@ -22,8 +22,8 @@ fn can_create_transaction() -> Result<(), Box<dyn Error>> {
         .execute(&conn)?;
     let expected = NewTransaction {
         name: "test",
-        source_account_id: 1,
-        destination_account_id: 2,
+        source_account_id: AccountId(1),
+        destination_account_id: AccountId(2),
         amount: 100,
     };
 
