@@ -1,34 +1,27 @@
-mod database;
-
-use diesel::prelude::*;
-use diesel::dsl::*;
-use std::error::Error;
 use rufm_core::models::accounts::*;
 use rufm_core::models::transactions::*;
-use rufm_core::schema::accounts;
-use rufm_core::schema::transactions;
+use rufm_core::*;
 
 #[test]
-fn can_create_transaction() -> Result<(), Box<dyn Error>> {
-    let conn = database::setup()?;
+fn can_create_transaction() {
+    let client = Client::new(None).unwrap();
+    let source_account = client
+        .create_account(&NewAccount { name: "source" })
+        .unwrap();
+    let destination_account = client
+        .create_account(&NewAccount {
+            name: "destination",
+        })
+        .unwrap();
 
-    insert_into(accounts::table)
-        .values(&vec![
-            NewAccount { name: "source" },
-            NewAccount {
-                name: "destination",
-            },
-        ])
-        .execute(&conn)?;
     let expected = NewTransaction {
         name: "test",
-        source_account_id: AccountId(1),
-        destination_account_id: AccountId(2),
+        source_account_id: source_account.id,
+        destination_account_id: destination_account.id,
         amount: 100,
     };
 
-    insert_into(transactions::table).values(&expected).execute(&conn)?;
-    let actual = transactions::table.first::<Transaction>(&conn)?;
+    let actual = client.create_transaction(&expected).unwrap();
 
     assert_eq!(expected.name, actual.name);
     assert_eq!(expected.source_account_id, actual.source_account_id);
@@ -37,6 +30,4 @@ fn can_create_transaction() -> Result<(), Box<dyn Error>> {
         actual.destination_account_id
     );
     assert_eq!(expected.amount, actual.amount);
-
-    Ok(())
 }

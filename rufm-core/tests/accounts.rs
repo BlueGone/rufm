@@ -1,23 +1,12 @@
-mod database;
-
-use diesel::prelude::*;
-use diesel::dsl::*;
-use std::error::Error;
 use rufm_core::models::accounts::*;
-use rufm_core::schema::accounts;
+use rufm_core::*;
 
 #[test]
-fn can_create_account() -> Result<(), Box<dyn Error>> {
-    let conn = database::setup()?;
+fn can_create_account() {
+    let client = Client::new(None).unwrap();
+    let new_account = NewAccount { name: "test" };
 
-    let expected = NewAccount { name: "test" };
+    let actual = client.create_account(&new_account).unwrap();
 
-    insert_into(accounts::table)
-        .values(&expected)
-        .execute(&conn)?;
-    let actual = accounts::table.first::<Account>(&conn)?;
-
-    assert_eq!(expected.name, actual.name);
-
-    Ok(())
+    assert_eq!(new_account.name, actual.name);
 }
