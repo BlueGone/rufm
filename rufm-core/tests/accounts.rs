@@ -3,8 +3,8 @@ mod database;
 use diesel::prelude::*;
 use diesel::dsl::*;
 use std::error::Error;
-use rufm::models::accounts::*;
-use rufm::schema::accounts;
+use rufm_core::models::accounts::*;
+use rufm_core::schema::accounts;
 
 #[test]
 fn can_create_account() -> Result<(), Box<dyn Error>> {

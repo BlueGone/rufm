@@ -3,10 +3,10 @@ mod database;
 use diesel::prelude::*;
 use diesel::dsl::*;
 use std::error::Error;
-use rufm::models::accounts::*;
-use rufm::models::transactions::*;
-use rufm::schema::accounts;
-use rufm::schema::transactions;
+use rufm_core::models::accounts::*;
+use rufm_core::models::transactions::*;
+use rufm_core::schema::accounts;
+use rufm_core::schema::transactions;
 
 #[test]
 fn can_create_transaction() -> Result<(), Box<dyn Error>> {
