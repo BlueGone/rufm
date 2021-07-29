@@ -40,6 +40,7 @@ fn spending_money_debits_the_given_amount() {
             source_account_id: account.id,
             destination_account_id: destination_account.id,
             amount: amount,
+            date: chrono::NaiveDate::from_ymd(1970, 1, 1),
         })
         .unwrap();
 
@@ -64,6 +65,7 @@ fn receiving_money_debits_the_given_amount() {
             source_account_id: source_account.id,
             destination_account_id: account.id,
             amount: amount,
+            date: chrono::NaiveDate::from_ymd(1970, 1, 1),
         })
         .unwrap();
 

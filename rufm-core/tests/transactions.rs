@@ -19,6 +19,7 @@ fn can_create_transaction() {
         source_account_id: source_account.id,
         destination_account_id: destination_account.id,
         amount: 100,
+        date: chrono::NaiveDate::from_ymd(1970, 1, 1),
     };
 
     let actual = client.create_transaction(&expected).unwrap();

@@ -11,6 +11,7 @@ pub struct Transaction {
     pub source_account_id: AccountId,
     pub destination_account_id: AccountId,
     pub amount: i64,
+    pub date: chrono::NaiveDate,
 }
 
 #[derive(Insertable, Debug)]
@@ -20,4 +21,5 @@ pub struct NewTransaction<'a> {
     pub source_account_id: AccountId,
     pub destination_account_id: AccountId,
     pub amount: i64,
+    pub date: chrono::NaiveDate,
 }
