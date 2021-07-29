@@ -1,7 +1,7 @@
 use crate::models::accounts::AccountId;
 use crate::schema::transactions;
 
-#[derive(DieselNewType, Debug, Hash, PartialEq, Eq)]
+#[derive(DieselNewType, Debug, Hash, PartialEq, Eq, Copy, Clone)]
 pub struct TransactionId(pub i32);
 
 #[derive(Queryable, Debug)]

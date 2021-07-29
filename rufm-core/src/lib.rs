@@ -27,9 +27,9 @@ impl Client {
             Some(path) => path,
             None => ":memory:",
         })?;
-        
+
         diesel_migrations::run_pending_migrations(&conn)?;
-        
+
         Ok(Client { conn })
     }
 }
@@ -43,6 +43,7 @@ pub trait TransactionsRepository {
 
 pub trait AccountsRepository {
     fn create_account(&self, new_account: &NewAccount) -> RepositoryResult<Account>;
+    fn get_account_balance(&self, account_id: &AccountId) -> RepositoryResult<i64>;
 }
 
 impl AccountsRepository for Client {
@@ -57,6 +58,19 @@ impl AccountsRepository for Client {
         schema::accounts::table
             .order(schema::accounts::id.desc())
             .first::<Account>(&self.conn)
+    }
+
+    fn get_account_balance(&self, account_id: &AccountId) -> RepositoryResult<i64> {
+        let credit_amounts = schema::transactions::table
+            .filter(schema::transactions::destination_account_id.eq(account_id))
+            .select(schema::transactions::amount)
+            .get_results(&self.conn)?;
+        let debit_amounts = schema::transactions::table
+            .filter(schema::transactions::source_account_id.eq(account_id))
+            .select(schema::transactions::amount)
+            .get_results(&self.conn)?;
+
+        Ok(credit_amounts.iter().sum::<i64>() - debit_amounts.iter().sum::<i64>())
     }
 }
 
