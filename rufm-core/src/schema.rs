@@ -12,6 +12,7 @@ table! {
         source_account_id -> Integer,
         destination_account_id -> Integer,
         amount -> BigInt,
+        date -> Date,
     }
 }
 
