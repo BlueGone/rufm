@@ -24,10 +24,7 @@ pub struct Client {
 
 impl Client {
     pub fn new(file: Option<&str>) -> Result<Client, Box<dyn std::error::Error>> {
-        let conn = SqliteConnection::establish(match file {
-            Some(path) => path,
-            None => ":memory:",
-        })?;
+        let conn = SqliteConnection::establish(file.unwrap_or(":memory:"))?;
 
         embedded_migrations::run(&conn)?;
 
