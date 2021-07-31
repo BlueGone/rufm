@@ -6,7 +6,7 @@ extern crate diesel_derive_newtype;
 extern crate diesel_migrations;
 extern crate chrono;
 
-embed_migrations!("migrations");
+embed_migrations!();
 
 pub mod models;
 pub mod schema;
@@ -29,7 +29,7 @@ impl Client {
             None => ":memory:",
         })?;
 
-        diesel_migrations::run_pending_migrations(&conn)?;
+        embedded_migrations::run(&conn)?;
 
         Ok(Client { conn })
     }
