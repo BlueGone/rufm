@@ -35,7 +35,7 @@ fn spending_money_debits_the_given_amount() {
             name: "transaction",
             source_account_id: account.id,
             destination_account_id: other_account.id,
-            amount: amount,
+            amount,
             date: get_first_day(),
         })
         .unwrap();
@@ -55,7 +55,7 @@ fn receiving_money_credits_the_given_amount() {
             name: "transaction",
             source_account_id: other_account.id,
             destination_account_id: account.id,
-            amount: amount,
+            amount,
             date: get_first_day(),
         })
         .unwrap();
@@ -101,10 +101,11 @@ fn balance_after_transactions_is_valid() {
 // Helper functions
 
 fn get_first_day() -> NaiveDate {
-    return NaiveDate::from_ymd(1970, 1, 1);
+    NaiveDate::from_ymd(1970, 1, 1)
 }
 
-fn setup_two_accounts() -> Result<(Client, Account, Account), Box<dyn std::error::Error>> {
+type TwoAccountsSetup = (Client, Account, Account);
+fn setup_two_accounts() -> Result<TwoAccountsSetup, Box<dyn std::error::Error>> {
     let client = Client::new(None)?;
     let main_account = client.create_account(&NewAccount { name: "main" })?;
     let other_account = client.create_account(&NewAccount { name: "other" })?;
@@ -112,8 +113,9 @@ fn setup_two_accounts() -> Result<(Client, Account, Account), Box<dyn std::error
     Ok((client, main_account, other_account))
 }
 
+type TwoAccountsAndMultipleTransactionsSetup = (Client, Account, Account, Vec<Transaction>);
 fn setup_two_accounts_and_multiple_transactions(
-) -> Result<(Client, Account, Account, Vec<Transaction>), Box<dyn std::error::Error>> {
+) -> Result<TwoAccountsAndMultipleTransactionsSetup, Box<dyn std::error::Error>> {
     let (client, main_account, other_account) = setup_two_accounts()?;
 
     let transactions = vec![
