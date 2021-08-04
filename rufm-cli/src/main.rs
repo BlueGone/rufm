@@ -71,6 +71,13 @@ impl FromStr for Money {
     }
 }
 
+use std::fmt;
+impl fmt::Display for Money {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:.2} €", self.0 as f64 / 100.0)
+    }
+}
+
 fn handle_accounts_command(
     client: &rufm_core::Client,
     accounts_command: AccountsCommand,
@@ -117,7 +124,48 @@ fn handle_transactions_command(
 
             Ok(())
         }
-        _ => Ok(()),
+        TransactionsCommand::List => {
+            let transactions = client.list_transactions()?;
+
+            let accounts_by_id =
+                transactions
+                    .iter()
+                    .flat_map(|transaction| {
+                        [
+                            transaction.source_account_id,
+                            transaction.destination_account_id,
+                        ]
+                    })
+                    .collect::<std::collections::HashSet<AccountId>>()
+                    .iter()
+                    .map(|account_id| {
+                        let account = client.get_account_by_id(account_id)?;
+
+                        Ok((*account_id, account))
+                    })
+                    .collect::<Result<
+                        std::collections::HashMap<AccountId, Account>,
+                        Box<dyn std::error::Error>,
+                    >>()?;
+
+            for transaction in transactions {
+                println!("{}  {}", transaction.name, Money(transaction.amount));
+                println!(
+                    "{} --> {}",
+                    accounts_by_id
+                        .get(&transaction.source_account_id)
+                        .expect("account by id")
+                        .name,
+                    accounts_by_id
+                        .get(&transaction.destination_account_id)
+                        .expect("account by id")
+                        .name,
+                );
+                println!();
+            }
+
+            Ok(())
+        }
     }
 }
 
