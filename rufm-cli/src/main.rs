@@ -58,7 +58,9 @@ fn handle_accounts_command(
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opt: Opt = Opt::from_args();
 
-    let client = rufm_core::Client::new(Some(&opt.database_path))?;
+    let database_path = shellexpand::tilde(&opt.database_path);
+
+    let client = rufm_core::Client::new(Some(&database_path))?;
 
     match opt.command {
         Command::Accounts(accounts_command) => handle_accounts_command(&client, accounts_command),
