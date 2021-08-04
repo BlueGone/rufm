@@ -16,6 +16,38 @@ fn can_create_account() {
 }
 
 #[test]
+fn can_list_accounts() {
+    let (client, main_account, other_account) = setup_two_accounts().unwrap();
+
+    let accounts_list = client.list_accounts().unwrap();
+
+    assert_eq!(accounts_list.len(), 2);
+    assert_eq!(
+        *accounts_list
+            .iter()
+            .find(|account| account.id == main_account.id)
+            .unwrap(),
+        main_account
+    );
+    assert_eq!(
+        *accounts_list
+            .iter()
+            .find(|account| account.id == other_account.id)
+            .unwrap(),
+        other_account
+    );
+}
+
+#[test]
+fn can_get_account_by_id() {
+    let (client, main_account, _) = setup_two_accounts().unwrap();
+
+    let account = client.get_account_by_id(&main_account.id).unwrap();
+
+    assert_eq!(account, main_account);
+}
+
+#[test]
 fn balance_is_zero_after_creation() {
     let client = Client::new(None).unwrap();
     let account = client.create_account(&NewAccount { name: "test" }).unwrap();

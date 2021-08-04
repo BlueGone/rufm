@@ -3,7 +3,7 @@ use crate::schema::accounts;
 #[derive(DieselNewType, Debug, Hash, PartialEq, Eq, Copy, Clone)]
 pub struct AccountId(pub i32);
 
-#[derive(Queryable, Debug)]
+#[derive(Queryable, Debug, Hash, PartialEq, Eq)]
 pub struct Account {
     pub id: AccountId,
     pub name: String,
