@@ -158,6 +158,7 @@ impl TransactionsRepository for Client {
                     .eq(account_id)
                     .or(schema::transactions::destination_account_id.eq(account_id)),
             )
+            .order(schema::transactions::date.desc())
             .get_results(&self.conn)
     }
 
@@ -173,6 +174,7 @@ impl TransactionsRepository for Client {
                     .or(schema::transactions::destination_account_id.eq(account_id))
                     .and(schema::transactions::date.le(date)),
             )
+            .order(schema::transactions::date.desc())
             .get_results(&self.conn)
     }
 }
