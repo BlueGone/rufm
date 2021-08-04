@@ -1,5 +1,8 @@
 use structopt::StructOpt;
 
+use rufm_core::models::accounts::*;
+use rufm_core::AccountsRepository;
+
 #[derive(Debug, StructOpt)]
 struct Opt {
     /// Database file path
@@ -30,8 +33,34 @@ enum AccountsCommand {
     List,
 }
 
-fn main() {
+fn handle_accounts_command(
+    client: &rufm_core::Client,
+    accounts_command: AccountsCommand,
+) -> Result<(), Box<dyn std::error::Error>> {
+    match accounts_command {
+        AccountsCommand::Create { name } => {
+            client.create_account(&NewAccount { name: &name })?;
+
+            Ok(())
+        }
+        AccountsCommand::List => {
+            let accounts = client.list_accounts()?;
+
+            for account in accounts {
+                println!("{}", account.name)
+            }
+
+            Ok(())
+        }
+    }
+}
+
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opt: Opt = Opt::from_args();
 
-    println!("{:?}", opt);
+    let client = rufm_core::Client::new(Some(&opt.database_path))?;
+
+    match opt.command {
+        Command::Accounts(accounts_command) => handle_accounts_command(&client, accounts_command),
+    }
 }
