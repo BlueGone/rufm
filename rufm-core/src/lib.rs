@@ -52,6 +52,7 @@ pub trait AccountsRepository {
     fn create_account(&self, new_account: &NewAccount) -> RepositoryResult<Account>;
     fn list_accounts(&self) -> RepositoryResult<Vec<Account>>;
     fn get_account_by_id(&self, account_id: &AccountId) -> RepositoryResult<Account>;
+    fn get_account_by_name(&self, account_name: &str) -> RepositoryResult<Account>;
     fn get_account_balance(&self, account_id: &AccountId) -> RepositoryResult<i64>;
     fn get_account_balance_as_of_date(
         &self,
@@ -81,6 +82,12 @@ impl AccountsRepository for Client {
     fn get_account_by_id(&self, account_id: &AccountId) -> RepositoryResult<Account> {
         schema::accounts::table
             .filter(schema::accounts::id.eq(account_id))
+            .first::<Account>(&self.conn)
+    }
+
+    fn get_account_by_name(&self, account_name: &str) -> RepositoryResult<Account> {
+        schema::accounts::table
+            .filter(schema::accounts::name.eq(account_name))
             .first::<Account>(&self.conn)
     }
 
