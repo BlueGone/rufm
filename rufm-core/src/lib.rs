@@ -37,6 +37,7 @@ type RepositoryResult<T> = Result<T, diesel::result::Error>;
 pub trait TransactionsRepository {
     fn create_transaction(&self, new_transaction: &NewTransaction)
         -> RepositoryResult<Transaction>;
+    fn list_transactions(&self) -> RepositoryResult<Vec<Transaction>>;
     fn get_transactions_for_account(
         &self,
         account_id: &AccountId,
@@ -139,6 +140,12 @@ impl TransactionsRepository for Client {
         schema::transactions::table
             .order(schema::transactions::id.desc())
             .first::<Transaction>(&self.conn)
+    }
+
+    fn list_transactions(&self) -> RepositoryResult<Vec<Transaction>> {
+        schema::transactions::table
+            .order(schema::transactions::date.desc())
+            .get_results(&self.conn)
     }
 
     fn get_transactions_for_account(
