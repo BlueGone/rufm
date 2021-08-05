@@ -10,3 +10,4 @@ chrono = "0.4.19"
 diesel = { version = "1.4.7", features = ["sqlite", "chrono"] }
 diesel-derive-newtype = "0.1.2"
 diesel_migrations = "1.4.0"
+thiserror = "1.0.26"
