@@ -22,8 +22,18 @@ pub struct Client {
     conn: SqliteConnection,
 }
 
+use thiserror::Error;
+
+#[derive(Error, Debug)]
+pub enum ClientCreationError {
+    #[error("Database connection error: {0}")]
+    DatabaseConnectionError(#[from] diesel::result::ConnectionError),
+    #[error("Cannot run migrations: {0}")]
+    MigrationsError(#[from] diesel_migrations::RunMigrationsError),
+}
+
 impl Client {
-    pub fn new(file: Option<&str>) -> Result<Client, Box<dyn std::error::Error>> {
+    pub fn new(file: Option<&str>) -> Result<Client, ClientCreationError> {
         let conn = SqliteConnection::establish(file.unwrap_or(":memory:"))?;
 
         embedded_migrations::run(&conn)?;
