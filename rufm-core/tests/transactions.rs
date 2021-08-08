@@ -6,11 +6,15 @@ use rufm_core::*;
 fn can_create_transaction() {
     let client = Client::new(None).unwrap();
     let source_account = client
-        .create_account(&NewAccount { name: "source" })
+        .create_account(&NewAccount {
+            name: "source",
+            account_type: AccountType::Asset,
+        })
         .unwrap();
     let destination_account = client
         .create_account(&NewAccount {
             name: "destination",
+            account_type: AccountType::Asset,
         })
         .unwrap();
 

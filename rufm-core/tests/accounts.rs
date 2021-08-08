@@ -8,7 +8,10 @@ use rufm_core::*;
 #[test]
 fn can_create_account() {
     let client = Client::new(None).unwrap();
-    let new_account = NewAccount { name: "test" };
+    let new_account = NewAccount {
+        name: "test",
+        account_type: AccountType::Asset,
+    };
 
     let actual = client.create_account(&new_account).unwrap();
 
@@ -50,7 +53,12 @@ fn can_get_account_by_id() {
 #[test]
 fn balance_is_zero_after_creation() {
     let client = Client::new(None).unwrap();
-    let account = client.create_account(&NewAccount { name: "test" }).unwrap();
+    let account = client
+        .create_account(&NewAccount {
+            name: "test",
+            account_type: AccountType::Asset,
+        })
+        .unwrap();
 
     let balance = client.get_account_balance(&account.id).unwrap();
 
@@ -139,8 +147,14 @@ fn get_first_day() -> NaiveDate {
 type TwoAccountsSetup = (Client, Account, Account);
 fn setup_two_accounts() -> Result<TwoAccountsSetup, Box<dyn std::error::Error>> {
     let client = Client::new(None)?;
-    let main_account = client.create_account(&NewAccount { name: "main" })?;
-    let other_account = client.create_account(&NewAccount { name: "other" })?;
+    let main_account = client.create_account(&NewAccount {
+        name: "main",
+        account_type: AccountType::Asset,
+    })?;
+    let other_account = client.create_account(&NewAccount {
+        name: "other",
+        account_type: AccountType::Asset,
+    })?;
 
     Ok((client, main_account, other_account))
 }
