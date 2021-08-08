@@ -6,4 +6,5 @@ use crate::schema::accounts;
 pub struct NewAccount<'a> {
     pub name: &'a str,
     pub account_type: AccountType,
+    pub initial_balance: i64,
 }

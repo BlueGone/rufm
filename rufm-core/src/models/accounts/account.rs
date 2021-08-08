@@ -5,4 +5,5 @@ pub struct Account {
     pub id: AccountId,
     pub name: String,
     pub account_type: AccountType,
+    pub initial_balance: i64,
 }

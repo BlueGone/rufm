@@ -9,12 +9,14 @@ fn can_create_transaction() {
         .create_account(&NewAccount {
             name: "source",
             account_type: AccountType::Asset,
+            initial_balance: 0,
         })
         .unwrap();
     let destination_account = client
         .create_account(&NewAccount {
             name: "destination",
             account_type: AccountType::Asset,
+            initial_balance: 0,
         })
         .unwrap();
 

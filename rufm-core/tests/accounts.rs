@@ -11,6 +11,7 @@ fn can_create_account() {
     let new_account = NewAccount {
         name: "test",
         account_type: AccountType::Asset,
+        initial_balance: 0,
     };
 
     let actual = client.create_account(&new_account).unwrap();
@@ -57,6 +58,7 @@ fn balance_is_zero_after_creation() {
         .create_account(&NewAccount {
             name: "test",
             account_type: AccountType::Asset,
+            initial_balance: 0
         })
         .unwrap();
 
@@ -150,10 +152,12 @@ fn setup_two_accounts() -> Result<TwoAccountsSetup, Box<dyn std::error::Error>> 
     let main_account = client.create_account(&NewAccount {
         name: "main",
         account_type: AccountType::Asset,
+        initial_balance: 0,
     })?;
     let other_account = client.create_account(&NewAccount {
         name: "other",
         account_type: AccountType::Asset,
+        initial_balance: 0,
     })?;
 
     Ok((client, main_account, other_account))
