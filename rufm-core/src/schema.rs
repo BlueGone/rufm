@@ -2,6 +2,7 @@ table! {
     accounts (id) {
         id -> Integer,
         name -> Text,
+        account_type -> Integer,
     }
 }
 

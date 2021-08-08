@@ -1,6 +1,7 @@
 CREATE TABLE accounts (
     id integer NOT NULL PRIMARY KEY,
-    name varchar(255) NOT NULL
+    name varchar(255) NOT NULL,
+    account_type integer NOT NULL
 );
 
 CREATE TABLE transactions (
