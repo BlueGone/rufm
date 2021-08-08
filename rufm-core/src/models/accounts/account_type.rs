@@ -1,18 +1,8 @@
-use crate::schema::accounts;
 use diesel::backend::Backend;
 use diesel::deserialize::{self, FromSql};
 use diesel::serialize::{self, ToSql};
 use diesel::sql_types::Integer;
 use std::convert::TryFrom;
-
-#[derive(DieselNewType, Debug, Hash, PartialEq, Eq, Copy, Clone)]
-pub struct AccountId(pub i32);
-
-#[derive(Queryable, Debug, Hash, PartialEq, Eq)]
-pub struct Account {
-    pub id: AccountId,
-    pub name: String,
-}
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy, AsExpression, FromSqlRow)]
 #[sql_type = "Integer"]
@@ -59,10 +49,4 @@ impl From<AccountType> for i32 {
     fn from(value: AccountType) -> Self {
         value as Self
     }
-}
-
-#[derive(Insertable, Debug)]
-#[table_name = "accounts"]
-pub struct NewAccount<'a> {
-    pub name: &'a str,
 }
