@@ -58,7 +58,7 @@ fn balance_is_zero_after_creation() {
         .create_account(&NewAccount {
             name: "test",
             account_type: AccountType::Asset,
-            initial_balance: 0
+            initial_balance: 0,
         })
         .unwrap();
 
