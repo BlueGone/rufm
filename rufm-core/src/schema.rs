@@ -3,6 +3,7 @@ table! {
         id -> Integer,
         name -> Text,
         account_type -> Integer,
+        initial_balance -> BigInt,
     }
 }
 
