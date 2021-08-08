@@ -84,7 +84,10 @@ fn handle_accounts_command(
 ) -> Result<(), Box<dyn std::error::Error>> {
     match accounts_command {
         AccountsCommand::Create { name } => {
-            client.create_account(&NewAccount { name: &name })?;
+            client.create_account(&NewAccount {
+                name: &name,
+                account_type: AccountType::Asset,
+            })?;
 
             Ok(())
         }
