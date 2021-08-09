@@ -20,6 +20,8 @@ pub enum TransactionType {
     Withdrawal,
     Deposit,
     Transfer,
+    #[serde(rename = "Opening balance")]
+    OpeningBalance,
 }
 
 #[derive(Debug, Deserialize)]
@@ -30,6 +32,10 @@ pub enum AccountType {
     Expense,
     #[serde(rename = "Revenue account")]
     Revenue,
+    #[serde(rename = "Loan")]
+    Loan,
+    #[serde(rename = "Initial balance account")]
+    InitialBalance,
 }
 
 #[derive(Debug, Deserialize)]
