@@ -4,15 +4,14 @@ extern crate rufm_core;
 extern crate serde;
 use csv::Reader;
 use rufm_core::Client;
+use thiserror::Error;
 
-#[derive(Debug)]
-pub struct ImportFireflyIiiError;
-
-impl From<csv::Error> for ImportFireflyIiiError {
-    fn from(e: csv::Error) -> ImportFireflyIiiError {
-        println!("{}", e);
-        panic!("{}", e);
-    }
+#[derive(Error, Debug)]
+pub enum ImportFireflyIiiError {
+    #[error("csv error: {0}")]
+    CsvError(#[from] csv::Error),
+    #[error("database error: {0}")]
+    DatabaseError(#[from] rufm_core::DatabaseError),
 }
 
 #[derive(Debug, Deserialize)]
@@ -114,7 +113,7 @@ fn get_or_create_account(
                 account_type: account_type.into(),
                 initial_balance: 0,
             })
-            .map_err(|_| ImportFireflyIiiError)
+            .map_err(|e| e.into())
     })
 }
 
@@ -134,5 +133,5 @@ fn create_transaction(
             destination_account_id: destination_account.id,
             date: date.naive_utc().date(),
         })
-        .map_err(|_| ImportFireflyIiiError)
+        .map_err(|e| e.into())
 }
