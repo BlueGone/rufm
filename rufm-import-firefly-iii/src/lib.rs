@@ -63,19 +63,32 @@ pub fn import_firefly_iii<R: std::io::Read>(
         .iter()
         .rev()
     {
-        let source_account = get_or_create_account(client, &record.source_name, &record.source_type)?;
-        let destination_account = get_or_create_account(client, &record.destination_name, &record.destination_type)?;
+        let source_account =
+            get_or_create_account(client, &record.source_name, &record.source_type)?;
+        let destination_account =
+            get_or_create_account(client, &record.destination_name, &record.destination_type)?;
+        let transaction = create_transaction(
+            client,
+            record.amount,
+            &record.description,
+            &record.date,
+            &source_account,
+            &destination_account,
+        );
 
         println!("{:?}", record);
         println!("{:?}", source_account);
         println!("{:?}", destination_account);
+        println!("{:?}", transaction);
     }
 
     todo!()
 }
 
 use rufm_core::models::accounts::{Account, AccountType as RufmAccountType, NewAccount};
+use rufm_core::models::transactions::{NewTransaction, Transaction};
 use rufm_core::AccountsRepository;
+use rufm_core::TransactionsRepository;
 
 impl From<&AccountType> for RufmAccountType {
     fn from(e: &AccountType) -> RufmAccountType {
@@ -103,4 +116,23 @@ fn get_or_create_account(
             })
             .map_err(|_| ImportFireflyIiiError)
     })
+}
+
+fn create_transaction(
+    client: &Client,
+    amount: f64,
+    description: &str,
+    date: &chrono::DateTime<chrono::offset::Utc>,
+    source_account: &Account,
+    destination_account: &Account,
+) -> Result<Transaction, ImportFireflyIiiError> {
+    client
+        .create_transaction(&NewTransaction {
+            name: description,
+            amount: (-amount * 100.0).round() as i64,
+            source_account_id: source_account.id,
+            destination_account_id: destination_account.id,
+            date: date.naive_utc().date(),
+        })
+        .map_err(|_| ImportFireflyIiiError)
 }
