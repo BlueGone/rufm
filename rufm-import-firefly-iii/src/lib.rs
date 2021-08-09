@@ -1,7 +1,12 @@
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
+extern crate rufm_core;
+use rufm_core::Client;
+
+#[derive(Debug)]
+pub struct ImportFireflyIiiError;
+
+pub fn import_firefly_iii<R: std::io::Read>(
+    _client: &Client,
+    _rdr: R,
+) -> Result<(), ImportFireflyIiiError> {
+    todo!()
 }
