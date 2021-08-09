@@ -5,7 +5,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [rufm-core, rufm-cli]
+        project: [rufm-core, rufm-cli, rufm-import-firefly-iii]
     steps:
       - uses: actions/checkout@v2
       - name: Build
