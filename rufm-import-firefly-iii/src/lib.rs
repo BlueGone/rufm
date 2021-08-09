@@ -52,18 +52,55 @@ pub struct CsvRecord {
 }
 
 pub fn import_firefly_iii<R: std::io::Read>(
-    _client: &Client,
-    _rdr: R,
+    client: &Client,
+    rdr: R,
 ) -> Result<(), ImportFireflyIiiError> {
-    let mut _csv_reader = Reader::from_reader(_rdr);
+    let mut _csv_reader = Reader::from_reader(rdr);
 
     for record in _csv_reader
         .deserialize()
         .collect::<Result<Vec<CsvRecord>, csv::Error>>()?
         .iter()
+        .rev()
     {
+        let source_account = get_or_create_account(client, &record.source_name, &record.source_type)?;
+        let destination_account = get_or_create_account(client, &record.destination_name, &record.destination_type)?;
+
         println!("{:?}", record);
+        println!("{:?}", source_account);
+        println!("{:?}", destination_account);
     }
 
     todo!()
+}
+
+use rufm_core::models::accounts::{Account, AccountType as RufmAccountType, NewAccount};
+use rufm_core::AccountsRepository;
+
+impl From<&AccountType> for RufmAccountType {
+    fn from(e: &AccountType) -> RufmAccountType {
+        match e {
+            AccountType::Asset => RufmAccountType::Asset,
+            AccountType::Expense => RufmAccountType::Expense,
+            AccountType::Revenue => RufmAccountType::Revenue,
+            AccountType::Loan => RufmAccountType::Asset,
+            AccountType::InitialBalance => RufmAccountType::Asset,
+        }
+    }
+}
+
+fn get_or_create_account(
+    client: &Client,
+    account_name: &str,
+    account_type: &AccountType,
+) -> Result<Account, ImportFireflyIiiError> {
+    client.get_account_by_name(account_name).or_else(|_| {
+        client
+            .create_account(&NewAccount {
+                name: account_name,
+                account_type: account_type.into(),
+                initial_balance: 0,
+            })
+            .map_err(|_| ImportFireflyIiiError)
+    })
 }
