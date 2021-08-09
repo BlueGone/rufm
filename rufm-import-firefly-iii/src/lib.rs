@@ -82,7 +82,7 @@ pub fn import_firefly_iii<R: std::io::Read>(
         println!("{:?}", transaction);
     }
 
-    todo!()
+    Ok(())
 }
 
 use rufm_core::models::accounts::{Account, AccountType as RufmAccountType, NewAccount};
