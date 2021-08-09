@@ -42,7 +42,9 @@ impl Client {
     }
 }
 
-type RepositoryResult<T> = Result<T, diesel::result::Error>;
+pub type DatabaseError = diesel::result::Error;
+
+type RepositoryResult<T> = Result<T, DatabaseError>;
 
 pub trait TransactionsRepository {
     fn create_transaction(&self, new_transaction: &NewTransaction)
