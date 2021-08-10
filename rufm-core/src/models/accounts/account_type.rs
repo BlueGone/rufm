@@ -1,8 +1,11 @@
-use diesel::backend::Backend;
-use diesel::deserialize::{self, FromSql};
-use diesel::serialize::{self, ToSql};
-use diesel::sql_types::Integer;
 use std::convert::TryFrom;
+
+use diesel::{
+    backend::Backend,
+    deserialize::{self, FromSql},
+    serialize::{self, ToSql},
+    sql_types::Integer,
+};
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone, Copy, AsExpression, FromSqlRow)]
 #[sql_type = "Integer"]

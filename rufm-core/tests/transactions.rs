@@ -1,6 +1,7 @@
-use rufm_core::models::accounts::*;
-use rufm_core::models::transactions::*;
-use rufm_core::*;
+use rufm_core::{
+    models::{accounts::*, transactions::*},
+    *,
+};
 
 #[test]
 fn can_create_transaction() {

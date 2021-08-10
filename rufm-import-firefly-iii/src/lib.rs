@@ -3,7 +3,15 @@ extern crate rufm_core;
 #[macro_use]
 extern crate serde;
 use csv::Reader;
-use rufm_core::Client;
+use rufm_core::{
+    models::{
+        accounts::{Account, AccountType as RufmAccountType, NewAccount},
+        transactions::{NewTransaction, Transaction},
+    },
+    AccountsRepository,
+    Client,
+    TransactionsRepository,
+};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -122,11 +130,6 @@ pub fn handle_initial_balance(
 
     Ok(())
 }
-
-use rufm_core::models::accounts::{Account, AccountType as RufmAccountType, NewAccount};
-use rufm_core::models::transactions::{NewTransaction, Transaction};
-use rufm_core::AccountsRepository;
-use rufm_core::TransactionsRepository;
 
 impl From<&AccountType> for RufmAccountType {
     fn from(e: &AccountType) -> RufmAccountType {

@@ -1,9 +1,8 @@
-use chrono::Duration;
-use chrono::NaiveDate;
-
-use rufm_core::models::accounts::*;
-use rufm_core::models::transactions::*;
-use rufm_core::*;
+use chrono::{Duration, NaiveDate};
+use rufm_core::{
+    models::{accounts::*, transactions::*},
+    *,
+};
 
 #[test]
 fn can_create_account() {

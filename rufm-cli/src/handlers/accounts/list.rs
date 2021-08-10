@@ -1,5 +1,6 @@
-use crate::{handlers::Handler, AccountsListOpt, Money};
 use rufm_core::AccountsRepository;
+
+use crate::{handlers::Handler, AccountsListOpt, Money};
 
 impl Handler for AccountsListOpt {
     fn handle(&self, client: &rufm_core::Client) -> Result<(), Box<dyn std::error::Error>> {

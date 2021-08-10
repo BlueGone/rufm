@@ -1,9 +1,6 @@
-use crate::handlers::Handler;
-use crate::AccountsShowOpt;
-use crate::Money;
-use rufm_core::models::transactions::Transaction;
-use rufm_core::AccountsRepository;
-use rufm_core::TransactionsRepository;
+use rufm_core::{models::transactions::Transaction, AccountsRepository, TransactionsRepository};
+
+use crate::{handlers::Handler, AccountsShowOpt, Money};
 
 impl Handler for AccountsShowOpt {
     fn handle(&self, client: &rufm_core::Client) -> Result<(), Box<dyn std::error::Error>> {

@@ -1,7 +1,6 @@
-use crate::handlers::Handler;
-use crate::TransactionsCreateOpt;
-use rufm_core::models::transactions::NewTransaction;
-use rufm_core::{AccountsRepository, TransactionsRepository};
+use rufm_core::{models::transactions::NewTransaction, AccountsRepository, TransactionsRepository};
+
+use crate::{handlers::Handler, TransactionsCreateOpt};
 
 impl Handler for TransactionsCreateOpt {
     fn handle(&self, client: &rufm_core::Client) -> Result<(), Box<dyn std::error::Error>> {

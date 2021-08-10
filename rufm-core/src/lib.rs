@@ -11,12 +11,8 @@ embed_migrations!();
 pub mod models;
 pub mod schema;
 
-use diesel::dsl::*;
-use diesel::prelude::*;
-use diesel::sqlite::SqliteConnection;
-
-use models::accounts::*;
-use models::transactions::*;
+use diesel::{dsl::*, prelude::*, sqlite::SqliteConnection};
+use models::{accounts::*, transactions::*};
 
 pub struct Client {
     conn: SqliteConnection,

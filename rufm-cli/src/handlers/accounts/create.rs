@@ -1,7 +1,9 @@
-use crate::handlers::Handler;
-use crate::AccountsCreateOpt;
-use rufm_core::models::accounts::{AccountType, NewAccount};
-use rufm_core::AccountsRepository;
+use rufm_core::{
+    models::accounts::{AccountType, NewAccount},
+    AccountsRepository,
+};
+
+use crate::{handlers::Handler, AccountsCreateOpt};
 
 impl Handler for AccountsCreateOpt {
     fn handle(&self, client: &rufm_core::Client) -> Result<(), Box<dyn std::error::Error>> {

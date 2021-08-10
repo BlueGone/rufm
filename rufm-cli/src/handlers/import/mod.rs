@@ -1,5 +1,4 @@
-use crate::handlers::Handler;
-use crate::ImportCommand;
+use crate::{handlers::Handler, ImportCommand};
 
 impl Handler for ImportCommand {
     fn handle(&self, client: &rufm_core::Client) -> Result<(), Box<dyn std::error::Error>> {

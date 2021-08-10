@@ -1,7 +1,10 @@
-use crate::handlers::Handler;
-use crate::{Money, TransactionsListOpt};
-use rufm_core::models::accounts::{Account, AccountId};
-use rufm_core::{AccountsRepository, TransactionsRepository};
+use rufm_core::{
+    models::accounts::{Account, AccountId},
+    AccountsRepository,
+    TransactionsRepository,
+};
+
+use crate::{handlers::Handler, Money, TransactionsListOpt};
 
 impl Handler for TransactionsListOpt {
     fn handle(&self, client: &rufm_core::Client) -> Result<(), Box<dyn std::error::Error>> {
