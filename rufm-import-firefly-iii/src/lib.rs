@@ -62,24 +62,63 @@ pub fn import_firefly_iii<R: std::io::Read>(
         .iter()
         .rev()
     {
-        let source_account =
-            get_or_create_account(client, &record.source_name, &record.source_type)?;
-        let destination_account =
-            get_or_create_account(client, &record.destination_name, &record.destination_type)?;
-        let transaction = create_transaction(
-            client,
-            record.amount,
-            &record.description,
-            &record.date,
-            &source_account,
-            &destination_account,
-        );
-
-        println!("{:?}", record);
-        println!("{:?}", source_account);
-        println!("{:?}", destination_account);
-        println!("{:?}", transaction);
+        match record {
+            CsvRecord {
+                transaction_type: TransactionType::OpeningBalance,
+                source_type: AccountType::InitialBalance,
+                ..
+            } => handle_initial_balance(client, record),
+            CsvRecord {
+                transaction_type: TransactionType::Withdrawal,
+                ..
+            } => handle_withdrawal(client, record),
+            // We assume that every transaction can be treated the same as a withdrawal.
+            _ => handle_withdrawal(client, record),
+        }?;
     }
+
+    Ok(())
+}
+
+pub fn handle_withdrawal(client: &Client, record: &CsvRecord) -> Result<(), ImportFireflyIiiError> {
+    let source_account = get_or_create_account(client, &record.source_name, &record.source_type)?;
+    let destination_account =
+        get_or_create_account(client, &record.destination_name, &record.destination_type)?;
+    let transaction = create_transaction(
+        client,
+        record.amount,
+        &record.description,
+        &record.date,
+        &source_account,
+        &destination_account,
+    )?;
+
+    println!(
+        "Created transaction '{}' ({}) from '{}' to '{}'",
+        transaction.name, transaction.amount, source_account.name, destination_account.name,
+    );
+
+    Ok(())
+}
+
+pub fn record_amount_to_rufm_amount(amount: f64) -> i64 {
+    (amount * 100.0).round() as i64
+}
+
+pub fn handle_initial_balance(
+    client: &Client,
+    record: &CsvRecord,
+) -> Result<(), ImportFireflyIiiError> {
+    let mut account =
+        get_or_create_account(client, &record.destination_name, &record.destination_type)?;
+
+    account.initial_balance = record_amount_to_rufm_amount(-record.amount);
+
+    let new_account = client.update_account_initial_balance(&account)?;
+    println!(
+        "Updated initial balance of account '{}' to {}",
+        new_account.name, new_account.initial_balance
+    );
 
     Ok(())
 }
