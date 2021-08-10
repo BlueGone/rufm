@@ -43,6 +43,12 @@ enum AccountsCommand {
     /// List all account
     #[structopt()]
     List,
+    /// Show an account
+    #[structopt()]
+    Show {
+        /// Account name
+        name: String,
+    },
 }
 
 #[derive(Debug, StructOpt)]
@@ -125,6 +131,48 @@ fn handle_accounts_command(
                 );
             }
 
+            Ok(())
+        }
+        AccountsCommand::Show { name } => {
+            let account = client.get_account_by_name(&name)?;
+            let balance = client.get_account_balance(&account.id)?;
+
+            struct TransactionData {
+                transaction: Transaction,
+                is_debit: bool,
+            }
+            let transactions_data = client
+                .get_transactions_for_account(&account.id)?
+                .into_iter()
+                .map(|transaction| {
+                    let is_debit = transaction.source_account_id == account.id;
+
+                    Ok(TransactionData {
+                        transaction,
+                        is_debit,
+                    })
+                })
+                .collect::<Result<Vec<_>, rufm_core::DatabaseError>>()?;
+
+            println!(
+                "{:40} {} {:6}",
+                account.name,
+                if balance >= 0 { "+" } else { "-" },
+                Money(balance.abs() as i64)
+            );
+            println!(" -- ");
+            for TransactionData {
+                transaction,
+                is_debit,
+            } in transactions_data
+            {
+                println!(
+                    "  {:38} {} {:6}",
+                    transaction.name,
+                    if is_debit { "-" } else { "+" },
+                    Money(transaction.amount)
+                );
+            }
             Ok(())
         }
     }
