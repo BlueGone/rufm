@@ -199,6 +199,19 @@ fn handle_transactions_command(
     }
 }
 
+#[cfg(feature = "import-firefly-iii")]
+fn handle_import_command(
+    client: &rufm_core::Client,
+    import_command: ImportCommand,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let ImportCommand::FireflyIii { export_file } = import_command;
+
+    let file = std::fs::File::open(&export_file)?;
+    rufm_import_firefly_iii::import_firefly_iii(client, &file)?;
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opt: Opt = Opt::from_args();
 
@@ -212,6 +225,6 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             handle_transactions_command(&client, transactions_command)
         }
         #[cfg(feature = "import-firefly-iii")]
-        Command::Import(_) => Ok(()),
+        Command::Import(import_command) => handle_import_command(&client, import_command),
     }
 }
