@@ -114,8 +114,13 @@ impl AccountsRepository for Client {
     }
 
     fn get_account_balance(&self, account_id: &AccountId) -> RepositoryResult<i64> {
-        self.get_transactions_for_account(account_id)
-            .map(|transactions| get_account_balance_from_transactions(transactions, account_id))
+        let initial_balance = self.get_account_by_id(account_id)?.initial_balance;
+        let transactions_sum = get_account_balance_from_transactions(
+            self.get_transactions_for_account(account_id)?,
+            account_id,
+        );
+
+        Ok(initial_balance + transactions_sum)
     }
 
     fn get_account_balance_as_of_date(
@@ -123,8 +128,13 @@ impl AccountsRepository for Client {
         account_id: &AccountId,
         date: &chrono::NaiveDate,
     ) -> RepositoryResult<i64> {
-        self.get_transactions_for_account_before_date_included(account_id, date)
-            .map(|transactions| get_account_balance_from_transactions(transactions, account_id))
+        let initial_balance = self.get_account_by_id(account_id)?.initial_balance;
+        let transactions_sum = get_account_balance_from_transactions(
+            self.get_transactions_for_account_before_date_included(account_id, date)?,
+            account_id,
+        );
+
+        Ok(initial_balance + transactions_sum)
     }
 }
 
