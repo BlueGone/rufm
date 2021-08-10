@@ -1,13 +1,13 @@
+use crate::handlers::Handler;
 use crate::ImportCommand;
 
-pub fn handle_import_command(
-    client: &rufm_core::Client,
-    import_command: ImportCommand,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let ImportCommand::FireflyIii { export_file } = import_command;
+impl Handler for ImportCommand {
+    fn handle(&self, client: &rufm_core::Client) -> Result<(), Box<dyn std::error::Error>> {
+        let ImportCommand::FireflyIii { export_file } = self;
 
-    let file = std::fs::File::open(&export_file)?;
-    rufm_import_firefly_iii::import_firefly_iii(client, &file)?;
+        let file = std::fs::File::open(&export_file)?;
+        rufm_import_firefly_iii::import_firefly_iii(client, &file)?;
 
-    Ok(())
+        Ok(())
+    }
 }

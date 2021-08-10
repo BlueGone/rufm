@@ -1,3 +1,4 @@
+use handlers::Handler;
 use structopt::StructOpt;
 
 mod handlers;
@@ -27,41 +28,54 @@ enum Command {
 }
 
 #[derive(Debug, StructOpt)]
+pub struct AccountsCreateOpt {
+    /// Account name
+    name: String,
+    /// Initial balance (in euros)
+    #[structopt(short, long, default_value = "0")]
+    initial_balance: Money,
+}
+
+pub struct AccountsListOpt;
+
+#[derive(Debug, StructOpt)]
+pub struct AccountsShowOpt {
+    /// Account name
+    name: String,
+}
+
+#[derive(Debug, StructOpt)]
 pub enum AccountsCommand {
     /// Create an account
     #[structopt()]
-    Create {
-        /// Account name
-        name: String,
-        /// Initial balance (in euros)
-        #[structopt(short, long, default_value = "0")]
-        initial_balance: Money,
-    },
+    Create(AccountsCreateOpt),
     /// List all account
     #[structopt()]
     List,
     /// Show an account
     #[structopt()]
-    Show {
-        /// Account name
-        name: String,
-    },
+    Show(AccountsShowOpt),
 }
+
+#[derive(Debug, StructOpt)]
+pub struct TransactionsCreateOpt {
+    /// Account name
+    name: String,
+    /// Transaction amount (in euros)
+    amount: Money,
+    /// Source account name
+    source_account: String,
+    /// Destination account name
+    destination_account: String,
+}
+
+pub struct TransactionsListOpt;
 
 #[derive(Debug, StructOpt)]
 pub enum TransactionsCommand {
     /// Create a transaction
     #[structopt()]
-    Create {
-        /// Account name
-        name: String,
-        /// Transaction amount (in euros)
-        amount: Money,
-        /// Source account name
-        source_account: String,
-        /// Destination account name
-        destination_account: String,
-    },
+    Create(TransactionsCreateOpt),
     /// List all transactions
     #[structopt()]
     List,
@@ -126,14 +140,5 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let client = rufm_core::Client::new(Some(&database_path))?;
 
-    match opt.command {
-        Command::Accounts(accounts_command) => {
-            handlers::handle_accounts_command(&client, accounts_command)
-        }
-        Command::Transactions(transactions_command) => {
-            handlers::handle_transactions_command(&client, transactions_command)
-        }
-        #[cfg(feature = "import-firefly-iii")]
-        Command::Import(import_command) => handlers::handle_import_command(&client, import_command),
-    }
+    opt.command.handle(&client)
 }

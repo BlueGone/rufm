@@ -1,19 +1,17 @@
-use crate::AccountsCommand;
+use crate::*;
+
+use super::Handler;
 
 mod create;
 mod list;
 mod show;
 
-pub fn handle_accounts_command(
-    client: &rufm_core::Client,
-    accounts_command: AccountsCommand,
-) -> Result<(), Box<dyn std::error::Error>> {
-    match accounts_command {
-        AccountsCommand::Create {
-            name,
-            initial_balance,
-        } => create::handle_accounts_create_command(client, &name, &initial_balance),
-        AccountsCommand::List => list::handle_accounts_list_command(client),
-        AccountsCommand::Show { name } => show::handle_accounts_show_command(client, &name),
+impl Handler for AccountsCommand {
+    fn handle(&self, client: &rufm_core::Client) -> Result<(), Box<dyn std::error::Error>> {
+        match self {
+            AccountsCommand::Create(accounts_create_opt) => accounts_create_opt.handle(client),
+            AccountsCommand::List => AccountsListOpt.handle(client),
+            AccountsCommand::Show(accounts_show_opt) => accounts_show_opt.handle(client),
+        }
     }
 }
