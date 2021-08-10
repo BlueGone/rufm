@@ -99,7 +99,26 @@ impl FromStr for Money {
 use std::fmt;
 impl fmt::Display for Money {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:.2} €", self.0 as f64 / 100.0)
+        let is_positive = self.0 >= 0;
+        let abs_amount = self.0.abs() as f64 / 100.0;
+
+        let uncolored = format!(
+            "{} {:7.2} €",
+            if is_positive { "+" } else { "-" },
+            abs_amount,
+        );
+
+        use colored::*;
+
+        write!(
+            f,
+            "{}",
+            if is_positive {
+                uncolored.green()
+            } else {
+                uncolored.red()
+            },
+        )
     }
 }
 
@@ -154,12 +173,7 @@ fn handle_accounts_command(
                 })
                 .collect::<Result<Vec<_>, rufm_core::DatabaseError>>()?;
 
-            println!(
-                "{:40} {} {:6}",
-                account.name,
-                if balance >= 0 { "+" } else { "-" },
-                Money(balance.abs() as i64)
-            );
+            println!("{:40} {:6}", account.name, Money(balance));
             println!(" -- ");
             for TransactionData {
                 transaction,
@@ -167,10 +181,13 @@ fn handle_accounts_command(
             } in transactions_data
             {
                 println!(
-                    "  {:38} {} {:6}",
+                    "  {:38} {:8}",
                     transaction.name,
-                    if is_debit { "-" } else { "+" },
-                    Money(transaction.amount)
+                    Money(if is_debit {
+                        -transaction.amount
+                    } else {
+                        transaction.amount
+                    })
                 );
             }
             Ok(())
