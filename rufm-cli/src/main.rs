@@ -16,14 +16,11 @@ struct Opt {
 #[derive(Debug, StructOpt)]
 enum Command {
     /// Create, list, and manage accounts
-    #[structopt()]
     Accounts(AccountsCommand),
     /// Create, list, and manage transactions
-    #[structopt()]
     Transactions(TransactionsCommand),
     #[cfg(feature = "import-firefly-iii")]
     /// Import from Firefly III
-    #[structopt()]
     Import(ImportCommand),
 }
 
@@ -47,13 +44,10 @@ pub struct AccountsShowOpt {
 #[derive(Debug, StructOpt)]
 pub enum AccountsCommand {
     /// Create an account
-    #[structopt()]
     Create(AccountsCreateOpt),
     /// List all account
-    #[structopt()]
     List,
     /// Show an account
-    #[structopt()]
     Show(AccountsShowOpt),
 }
 
@@ -74,10 +68,8 @@ pub struct TransactionsListOpt;
 #[derive(Debug, StructOpt)]
 pub enum TransactionsCommand {
     /// Create a transaction
-    #[structopt()]
     Create(TransactionsCreateOpt),
     /// List all transactions
-    #[structopt()]
     List,
 }
 
@@ -85,10 +77,8 @@ pub enum TransactionsCommand {
 #[derive(Debug, StructOpt)]
 pub enum ImportCommand {
     /// Import from Firefly III
-    #[structopt()]
     FireflyIii {
         /// .csv export file path
-        #[structopt()]
         export_file: String,
     },
 }
