@@ -1,9 +1,6 @@
 use structopt::StructOpt;
 
-use rufm_core::models::accounts::*;
-use rufm_core::models::transactions::*;
-use rufm_core::AccountsRepository;
-use rufm_core::TransactionsRepository;
+mod handlers;
 
 #[derive(Debug, StructOpt)]
 struct Opt {
@@ -30,7 +27,7 @@ enum Command {
 }
 
 #[derive(Debug, StructOpt)]
-enum AccountsCommand {
+pub enum AccountsCommand {
     /// Create an account
     #[structopt()]
     Create {
@@ -52,7 +49,7 @@ enum AccountsCommand {
 }
 
 #[derive(Debug, StructOpt)]
-enum TransactionsCommand {
+pub enum TransactionsCommand {
     /// Create a transaction
     #[structopt()]
     Create {
@@ -72,7 +69,7 @@ enum TransactionsCommand {
 
 #[cfg(feature = "import-firefly-iii")]
 #[derive(Debug, StructOpt)]
-enum ImportCommand {
+pub enum ImportCommand {
     /// Import from Firefly III
     #[structopt()]
     FireflyIii {
@@ -83,7 +80,7 @@ enum ImportCommand {
 }
 
 #[derive(Debug)]
-struct Money(i64);
+pub struct Money(pub i64);
 
 use std::str::FromStr;
 impl FromStr for Money {
@@ -122,161 +119,6 @@ impl fmt::Display for Money {
     }
 }
 
-fn handle_accounts_command(
-    client: &rufm_core::Client,
-    accounts_command: AccountsCommand,
-) -> Result<(), Box<dyn std::error::Error>> {
-    match accounts_command {
-        AccountsCommand::Create {
-            name,
-            initial_balance,
-        } => {
-            client.create_account(&NewAccount {
-                name: &name,
-                account_type: AccountType::Asset,
-                initial_balance: initial_balance.0,
-            })?;
-
-            Ok(())
-        }
-        AccountsCommand::List => {
-            let accounts = client.list_accounts()?;
-
-            for account in accounts {
-                println!(
-                    "{} (initial balance {})",
-                    account.name,
-                    Money(account.initial_balance)
-                );
-            }
-
-            Ok(())
-        }
-        AccountsCommand::Show { name } => {
-            let account = client.get_account_by_name(&name)?;
-            let balance = client.get_account_balance(&account.id)?;
-
-            struct TransactionData {
-                transaction: Transaction,
-                is_debit: bool,
-            }
-            let transactions_data = client
-                .get_transactions_for_account(&account.id)?
-                .into_iter()
-                .map(|transaction| {
-                    let is_debit = transaction.source_account_id == account.id;
-
-                    Ok(TransactionData {
-                        transaction,
-                        is_debit,
-                    })
-                })
-                .collect::<Result<Vec<_>, rufm_core::DatabaseError>>()?;
-
-            println!("{:40} {:6}", account.name, Money(balance));
-            println!(" -- ");
-            for TransactionData {
-                transaction,
-                is_debit,
-            } in transactions_data
-            {
-                println!(
-                    "  {:38} {:8}",
-                    transaction.name,
-                    Money(if is_debit {
-                        -transaction.amount
-                    } else {
-                        transaction.amount
-                    })
-                );
-            }
-            Ok(())
-        }
-    }
-}
-
-fn handle_transactions_command(
-    client: &rufm_core::Client,
-    transactions_command: TransactionsCommand,
-) -> Result<(), Box<dyn std::error::Error>> {
-    match transactions_command {
-        TransactionsCommand::Create {
-            name,
-            amount,
-            source_account,
-            destination_account,
-        } => {
-            let source_account = client.get_account_by_name(&source_account)?;
-            let destination_account = client.get_account_by_name(&destination_account)?;
-
-            client.create_transaction(&NewTransaction {
-                name: &name,
-                amount: amount.0,
-                source_account_id: source_account.id,
-                destination_account_id: destination_account.id,
-                date: chrono::Local::now().naive_local().date(),
-            })?;
-
-            Ok(())
-        }
-        TransactionsCommand::List => {
-            let transactions = client.list_transactions()?;
-
-            let accounts_by_id =
-                transactions
-                    .iter()
-                    .flat_map(|transaction| {
-                        [
-                            transaction.source_account_id,
-                            transaction.destination_account_id,
-                        ]
-                    })
-                    .collect::<std::collections::HashSet<AccountId>>()
-                    .iter()
-                    .map(|account_id| {
-                        let account = client.get_account_by_id(account_id)?;
-
-                        Ok((*account_id, account))
-                    })
-                    .collect::<Result<
-                        std::collections::HashMap<AccountId, Account>,
-                        Box<dyn std::error::Error>,
-                    >>()?;
-
-            for transaction in transactions {
-                println!("{}  {}", transaction.name, Money(transaction.amount));
-                println!(
-                    "{} --> {}",
-                    accounts_by_id
-                        .get(&transaction.source_account_id)
-                        .expect("account by id")
-                        .name,
-                    accounts_by_id
-                        .get(&transaction.destination_account_id)
-                        .expect("account by id")
-                        .name,
-                );
-                println!();
-            }
-
-            Ok(())
-        }
-    }
-}
-
-#[cfg(feature = "import-firefly-iii")]
-fn handle_import_command(
-    client: &rufm_core::Client,
-    import_command: ImportCommand,
-) -> Result<(), Box<dyn std::error::Error>> {
-    let ImportCommand::FireflyIii { export_file } = import_command;
-
-    let file = std::fs::File::open(&export_file)?;
-    rufm_import_firefly_iii::import_firefly_iii(client, &file)?;
-
-    Ok(())
-}
-
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let opt: Opt = Opt::from_args();
 
@@ -285,11 +127,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let client = rufm_core::Client::new(Some(&database_path))?;
 
     match opt.command {
-        Command::Accounts(accounts_command) => handle_accounts_command(&client, accounts_command),
+        Command::Accounts(accounts_command) => {
+            handlers::handle_accounts_command(&client, accounts_command)
+        }
         Command::Transactions(transactions_command) => {
-            handle_transactions_command(&client, transactions_command)
+            handlers::handle_transactions_command(&client, transactions_command)
         }
         #[cfg(feature = "import-firefly-iii")]
-        Command::Import(import_command) => handle_import_command(&client, import_command),
+        Command::Import(import_command) => handlers::handle_import_command(&client, import_command),
     }
 }
