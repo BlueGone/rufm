@@ -102,11 +102,14 @@ fn handle_accounts_command(
     accounts_command: AccountsCommand,
 ) -> Result<(), Box<dyn std::error::Error>> {
     match accounts_command {
-        AccountsCommand::Create { name, initial_balance } => {
+        AccountsCommand::Create {
+            name,
+            initial_balance,
+        } => {
             client.create_account(&NewAccount {
                 name: &name,
                 account_type: AccountType::Asset,
-                initial_balance: initial_balance.0
+                initial_balance: initial_balance.0,
             })?;
 
             Ok(())
@@ -115,7 +118,11 @@ fn handle_accounts_command(
             let accounts = client.list_accounts()?;
 
             for account in accounts {
-                println!("{} (initial balance {})", account.name,  Money(account.initial_balance));
+                println!(
+                    "{} (initial balance {})",
+                    account.name,
+                    Money(account.initial_balance)
+                );
             }
 
             Ok(())
