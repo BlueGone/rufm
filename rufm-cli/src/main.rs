@@ -23,6 +23,10 @@ enum Command {
     /// Create, list, and manage transactions
     #[structopt()]
     Transactions(TransactionsCommand),
+    #[cfg(feature = "import-firefly-iii")]
+    /// Import from Firefly III
+    #[structopt()]
+    Import(ImportCommand),
 }
 
 #[derive(Debug, StructOpt)]
@@ -58,6 +62,18 @@ enum TransactionsCommand {
     /// List all transactions
     #[structopt()]
     List,
+}
+
+#[cfg(feature = "import-firefly-iii")]
+#[derive(Debug, StructOpt)]
+enum ImportCommand {
+    /// Import from Firefly III
+    #[structopt()]
+    FireflyIii {
+        /// .csv export file path
+        #[structopt()]
+        export_file: String,
+    },
 }
 
 #[derive(Debug)]
@@ -188,5 +204,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Command::Transactions(transactions_command) => {
             handle_transactions_command(&client, transactions_command)
         }
+        #[cfg(feature = "import-firefly-iii")]
+        Command::Import(_) => Ok(()),
     }
 }
