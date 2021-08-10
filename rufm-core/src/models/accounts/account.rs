@@ -1,6 +1,8 @@
 use super::{AccountId, AccountType};
+use crate::schema::accounts;
 
-#[derive(Queryable, Debug, Hash, PartialEq, Eq)]
+#[derive(Queryable, Identifiable, Debug, Hash, PartialEq, Eq)]
+#[table_name = "accounts"]
 pub struct Account {
     pub id: AccountId,
     pub name: String,

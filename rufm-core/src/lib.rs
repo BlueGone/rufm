@@ -66,6 +66,7 @@ pub trait AccountsRepository {
     fn list_accounts(&self) -> RepositoryResult<Vec<Account>>;
     fn get_account_by_id(&self, account_id: &AccountId) -> RepositoryResult<Account>;
     fn get_account_by_name(&self, account_name: &str) -> RepositoryResult<Account>;
+    fn update_account_initial_balance(&self, account: &Account) -> RepositoryResult<Account>;
     fn get_account_balance(&self, account_id: &AccountId) -> RepositoryResult<i64>;
     fn get_account_balance_as_of_date(
         &self,
@@ -102,6 +103,14 @@ impl AccountsRepository for Client {
         schema::accounts::table
             .filter(schema::accounts::name.eq(account_name))
             .first::<Account>(&self.conn)
+    }
+
+    fn update_account_initial_balance(&self, account: &Account) -> RepositoryResult<Account> {
+        update(account)
+            .set(schema::accounts::initial_balance.eq(account.initial_balance))
+            .execute(&self.conn)?;
+
+        self.get_account_by_id(&account.id)
     }
 
     fn get_account_balance(&self, account_id: &AccountId) -> RepositoryResult<i64> {
