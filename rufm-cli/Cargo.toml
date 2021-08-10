@@ -9,6 +9,8 @@ edition = "2018"
 structopt = "0.3.22"
 shellexpand = "2.1.0"
 chrono = "0.4.19"
+rufm-core = { path = "../rufm-core" }
+rufm-import-firefly-iii = { path = "../rufm-import-firefly-iii", optional = true }
 
-[dependencies.rufm-core]
-path = "../rufm-core"
+[features]
+import-firefly-iii = [ "rufm-import-firefly-iii" ]
