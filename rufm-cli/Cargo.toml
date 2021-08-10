@@ -11,6 +11,7 @@ shellexpand = "2.1.0"
 chrono = "0.4.19"
 rufm-core = { path = "../rufm-core" }
 rufm-import-firefly-iii = { path = "../rufm-import-firefly-iii", optional = true }
+colored = "2.0.0"
 
 [features]
 import-firefly-iii = [ "rufm-import-firefly-iii" ]
