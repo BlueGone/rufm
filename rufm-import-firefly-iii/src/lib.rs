@@ -77,6 +77,11 @@ pub fn import_firefly_iii<R: std::io::Read>(
                 ..
             } => handle_initial_balance(client, record),
             CsvRecord {
+                transaction_type: TransactionType::OpeningBalance,
+                destination_type: AccountType::InitialBalance,
+                ..
+            } => handle_negative_initial_balance(client, record),
+            CsvRecord {
                 transaction_type: TransactionType::Withdrawal,
                 ..
             } => handle_withdrawal(client, record),
@@ -121,6 +126,23 @@ pub fn handle_initial_balance(
         get_or_create_account(client, &record.destination_name, &record.destination_type)?;
 
     account.initial_balance = record_amount_to_rufm_amount(-record.amount);
+
+    let new_account = client.update_account_initial_balance(&account)?;
+    println!(
+        "Updated initial balance of account '{}' to {}",
+        new_account.name, new_account.initial_balance
+    );
+
+    Ok(())
+}
+
+pub fn handle_negative_initial_balance(
+    client: &Client,
+    record: &CsvRecord,
+) -> Result<(), ImportFireflyIiiError> {
+    let mut account = get_or_create_account(client, &record.source_name, &record.source_type)?;
+
+    account.initial_balance = record_amount_to_rufm_amount(record.amount);
 
     let new_account = client.update_account_initial_balance(&account)?;
     println!(
