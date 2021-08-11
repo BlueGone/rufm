@@ -40,3 +40,31 @@ jobs:
         with:
           command: test
           args: --verbose --manifest-path ${{ matrix.project }}/Cargo.toml
+
+  lint:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        project:
+          - rufm-core
+          - rufm-cli
+          - rufm-import-firefly-iii
+
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: nightly
+          profile: minimal
+          override: true
+          components: rustfmt
+
+      - name: Run fmt check
+        uses: actions-rs/cargo@v1
+        with:
+          command: fmt
+          args: --verbose --manifest-path ${{ matrix.project }}/Cargo.toml -- --check
