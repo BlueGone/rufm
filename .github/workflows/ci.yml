@@ -3,14 +3,40 @@ on: push
 name: ci
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
+
     strategy:
       matrix:
-        project: [rufm-core, rufm-cli, rufm-import-firefly-iii]
+        project:
+          - rufm-core
+          - rufm-cli
+          - rufm-import-firefly-iii
+
+        toolchain:
+          - stable
+          - beta
+          - nightly
+
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout sources
+        uses: actions/checkout@v2
+
+      - name: Install rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.toolchain }}
+          profile: minimal
+          override: true
+
       - name: Build
-        run: cargo build --verbose --manifest-path ${{ matrix.project }}/Cargo.toml
-      - name: Run tests
-        run: cargo test --verbose --manifest-path ${{ matrix.project }}/Cargo.toml
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --verbose --manifest-path ${{ matrix.project }}/Cargo.toml
+
+      - name: Test
+        uses: actions-rs/cargo@v1
+        with:
+          command: test
+          args: --verbose --manifest-path ${{ matrix.project }}/Cargo.toml
