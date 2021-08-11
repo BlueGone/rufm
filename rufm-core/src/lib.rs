@@ -60,6 +60,7 @@ pub trait TransactionsRepository {
 pub trait AccountsRepository {
     fn create_account(&self, new_account: &NewAccount) -> RepositoryResult<Account>;
     fn list_accounts(&self) -> RepositoryResult<Vec<Account>>;
+    fn list_asset_accounts(&self) -> RepositoryResult<Vec<Account>>;
     fn get_account_by_id(&self, account_id: &AccountId) -> RepositoryResult<Account>;
     fn get_account_by_name(&self, account_name: &str) -> RepositoryResult<Account>;
     fn update_account_initial_balance(&self, account: &Account) -> RepositoryResult<Account>;
@@ -87,6 +88,12 @@ impl AccountsRepository for Client {
 
     fn list_accounts(&self) -> RepositoryResult<Vec<Account>> {
         schema::accounts::table.get_results(&self.conn)
+    }
+
+    fn list_asset_accounts(&self) -> RepositoryResult<Vec<Account>> {
+        schema::accounts::table
+            .filter(schema::accounts::account_type.eq(models::accounts::AccountType::Asset))
+            .get_results(&self.conn)
     }
 
     fn get_account_by_id(&self, account_id: &AccountId) -> RepositoryResult<Account> {
