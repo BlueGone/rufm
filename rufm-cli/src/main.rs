@@ -104,7 +104,7 @@ impl fmt::Display for Money {
         let abs_amount = self.0.abs() as f64 / 100.0;
 
         let uncolored = format!(
-            "{} {:7.2} €",
+            "{} {:8.2} €",
             if is_positive { "+" } else { "-" },
             abs_amount,
         );
