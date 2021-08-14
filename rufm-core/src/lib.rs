@@ -38,45 +38,39 @@ impl Client {
     }
 }
 
-pub type DatabaseError = diesel::result::Error;
-
-type RepositoryResult<T> = Result<T, DatabaseError>;
+pub type QueryError = diesel::result::Error;
+pub type QueryResult<T> = diesel::result::QueryResult<T>;
+pub use diesel::result::OptionalExtension;
 
 pub trait TransactionsRepository {
-    fn create_transaction(&self, new_transaction: &NewTransaction)
-        -> RepositoryResult<Transaction>;
-    fn list_transactions(&self) -> RepositoryResult<Vec<Transaction>>;
-    fn get_transactions_for_account(
-        &self,
-        account_id: &AccountId,
-    ) -> RepositoryResult<Vec<Transaction>>;
+    fn create_transaction(&self, new_transaction: &NewTransaction) -> QueryResult<Transaction>;
+    fn list_transactions(&self) -> QueryResult<Vec<Transaction>>;
+    fn get_transactions_for_account(&self, account_id: &AccountId)
+        -> QueryResult<Vec<Transaction>>;
     fn get_transactions_for_account_before_date_included(
         &self,
         account_id: &AccountId,
         date: &chrono::NaiveDate,
-    ) -> RepositoryResult<Vec<Transaction>>;
+    ) -> QueryResult<Vec<Transaction>>;
 }
 
 pub trait AccountsRepository {
-    fn create_account(&self, new_account: &NewAccount) -> RepositoryResult<Account>;
-    fn list_accounts(&self) -> RepositoryResult<Vec<Account>>;
-    fn list_asset_accounts(&self) -> RepositoryResult<Vec<Account>>;
-    fn get_account_by_id(&self, account_id: &AccountId) -> RepositoryResult<Account>;
-    fn get_account_by_name(&self, account_name: &str) -> RepositoryResult<Account>;
-    fn update_account_initial_balance(&self, account: &Account) -> RepositoryResult<Account>;
-    fn get_account_balance(&self, account_id: &AccountId) -> RepositoryResult<i64>;
+    fn create_account(&self, new_account: &NewAccount) -> QueryResult<Account>;
+    fn list_accounts(&self) -> QueryResult<Vec<Account>>;
+    fn list_asset_accounts(&self) -> QueryResult<Vec<Account>>;
+    fn get_account_by_id(&self, account_id: &AccountId) -> QueryResult<Account>;
+    fn get_account_by_name(&self, account_name: &str) -> QueryResult<Account>;
+    fn update_account_initial_balance(&self, account: &Account) -> QueryResult<Account>;
+    fn get_account_balance(&self, account_id: &AccountId) -> QueryResult<i64>;
     fn get_account_balance_as_of_date(
         &self,
         account_id: &AccountId,
         date: &chrono::NaiveDate,
-    ) -> RepositoryResult<i64>;
+    ) -> QueryResult<i64>;
 }
 
 impl AccountsRepository for Client {
-    fn create_account(
-        &self,
-        new_account: &models::accounts::NewAccount,
-    ) -> RepositoryResult<Account> {
+    fn create_account(&self, new_account: &models::accounts::NewAccount) -> QueryResult<Account> {
         insert_into(schema::accounts::table)
             .values(new_account)
             .execute(&self.conn)?;
@@ -86,29 +80,29 @@ impl AccountsRepository for Client {
             .first::<Account>(&self.conn)
     }
 
-    fn list_accounts(&self) -> RepositoryResult<Vec<Account>> {
+    fn list_accounts(&self) -> QueryResult<Vec<Account>> {
         schema::accounts::table.get_results(&self.conn)
     }
 
-    fn list_asset_accounts(&self) -> RepositoryResult<Vec<Account>> {
+    fn list_asset_accounts(&self) -> QueryResult<Vec<Account>> {
         schema::accounts::table
             .filter(schema::accounts::account_type.eq(models::accounts::AccountType::Asset))
             .get_results(&self.conn)
     }
 
-    fn get_account_by_id(&self, account_id: &AccountId) -> RepositoryResult<Account> {
+    fn get_account_by_id(&self, account_id: &AccountId) -> QueryResult<Account> {
         schema::accounts::table
             .filter(schema::accounts::id.eq(account_id))
             .first::<Account>(&self.conn)
     }
 
-    fn get_account_by_name(&self, account_name: &str) -> RepositoryResult<Account> {
+    fn get_account_by_name(&self, account_name: &str) -> QueryResult<Account> {
         schema::accounts::table
             .filter(schema::accounts::name.eq(account_name))
             .first::<Account>(&self.conn)
     }
 
-    fn update_account_initial_balance(&self, account: &Account) -> RepositoryResult<Account> {
+    fn update_account_initial_balance(&self, account: &Account) -> QueryResult<Account> {
         update(account)
             .set(schema::accounts::initial_balance.eq(account.initial_balance))
             .execute(&self.conn)?;
@@ -116,7 +110,7 @@ impl AccountsRepository for Client {
         self.get_account_by_id(&account.id)
     }
 
-    fn get_account_balance(&self, account_id: &AccountId) -> RepositoryResult<i64> {
+    fn get_account_balance(&self, account_id: &AccountId) -> QueryResult<i64> {
         let initial_balance = self.get_account_by_id(account_id)?.initial_balance;
         let transactions_sum = get_account_balance_from_transactions(
             self.get_transactions_for_account(account_id)?,
@@ -130,7 +124,7 @@ impl AccountsRepository for Client {
         &self,
         account_id: &AccountId,
         date: &chrono::NaiveDate,
-    ) -> RepositoryResult<i64> {
+    ) -> QueryResult<i64> {
         let initial_balance = self.get_account_by_id(account_id)?.initial_balance;
         let transactions_sum = get_account_balance_from_transactions(
             self.get_transactions_for_account_before_date_included(account_id, date)?,
@@ -166,7 +160,7 @@ impl TransactionsRepository for Client {
     fn create_transaction(
         &self,
         new_transaction: &models::transactions::NewTransaction,
-    ) -> RepositoryResult<Transaction> {
+    ) -> QueryResult<Transaction> {
         insert_into(schema::transactions::table)
             .values(new_transaction)
             .execute(&self.conn)?;
@@ -176,7 +170,7 @@ impl TransactionsRepository for Client {
             .first::<Transaction>(&self.conn)
     }
 
-    fn list_transactions(&self) -> RepositoryResult<Vec<Transaction>> {
+    fn list_transactions(&self) -> QueryResult<Vec<Transaction>> {
         schema::transactions::table
             .order(schema::transactions::date.desc())
             .get_results(&self.conn)
@@ -185,7 +179,7 @@ impl TransactionsRepository for Client {
     fn get_transactions_for_account(
         &self,
         account_id: &AccountId,
-    ) -> RepositoryResult<Vec<Transaction>> {
+    ) -> QueryResult<Vec<Transaction>> {
         schema::transactions::table
             .filter(
                 schema::transactions::source_account_id
@@ -200,7 +194,7 @@ impl TransactionsRepository for Client {
         &self,
         account_id: &AccountId,
         date: &chrono::NaiveDate,
-    ) -> RepositoryResult<Vec<Transaction>> {
+    ) -> QueryResult<Vec<Transaction>> {
         schema::transactions::table
             .filter(
                 schema::transactions::source_account_id
