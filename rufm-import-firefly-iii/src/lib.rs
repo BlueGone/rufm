@@ -19,7 +19,7 @@ pub enum ImportFireflyIiiError {
     #[error("csv error: {0}")]
     CsvError(#[from] csv::Error),
     #[error("database error: {0}")]
-    DatabaseError(#[from] rufm_core::DatabaseError),
+    DatabaseError(#[from] rufm_core::QueryError),
 }
 
 #[derive(Debug, Deserialize)]
