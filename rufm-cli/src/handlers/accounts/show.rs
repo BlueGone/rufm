@@ -1,4 +1,9 @@
-use rufm_core::{models::transactions::Transaction, AccountsRepository, TransactionsRepository};
+use rufm_core::{
+    models::transactions::Transaction,
+    AccountsRepository,
+    QueryResult,
+    TransactionsRepository,
+};
 
 use crate::{handlers::Handler, AccountsShowOpt, Money};
 
@@ -22,7 +27,7 @@ impl Handler for AccountsShowOpt {
                     is_debit,
                 })
             })
-            .collect::<Result<Vec<_>, rufm_core::DatabaseError>>()?;
+            .collect::<QueryResult<Vec<_>>>()?;
 
         println!("{:40} {:6}", account.name, Money(balance));
         println!(" -- ");

@@ -1,4 +1,4 @@
-use rufm_core::AccountsRepository;
+use rufm_core::{AccountsRepository, QueryResult};
 
 use crate::{handlers::Handler, AccountsListOpt, Money};
 
@@ -13,7 +13,7 @@ impl Handler for AccountsListOpt {
 
                 Ok((account, balance))
             })
-            .collect::<Result<Vec<_>, rufm_core::DatabaseError>>()?;
+            .collect::<QueryResult<Vec<_>>>()?;
 
         for (account, balance) in accounts_with_balance {
             println!("{:60} {}", account.name, Money(balance));
