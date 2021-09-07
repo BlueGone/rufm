@@ -12,3 +12,6 @@ diesel = { version = "1.4.7", features = ["sqlite", "chrono"] }
 diesel-derive-newtype = "0.1.2"
 diesel_migrations = "1.4.0"
 thiserror = "1.0.26"
+
+[target.'cfg(windows)'.dependencies]
+libsqlite3-sys = { version = "0.22.2", features = ["bundled"] }
